@@ -1,0 +1,246 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user profile and theme/currency preferences",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "email": { "type": "string", "description": "User email address" },
+        "themeMode": { "type": "string", "enum": ["system", "dark", "light"] },
+        "preferredCurrency": { "type": "string", "enum": ["KES"] },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp on create" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp on update" }
+      },
+      "required": ["userId", "displayName", "themeMode", "preferredCurrency", "createdAt", "updatedAt"]
+    },
+    "SavedVehicle": {
+      "title": "SavedVehicle",
+      "description": "User-bookmarked vehicle listing with pricing and specs",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "listingId": { "type": "string" },
+        "make": { "type": "string" },
+        "model": { "type": "string" },
+        "year": { "type": "integer" },
+        "askingPriceKes": { "type": "integer" },
+        "mileageKm": { "type": "integer" },
+        "transmission": { "type": "string" },
+        "fuelType": { "type": "string" },
+        "engineCc": { "type": "integer" },
+        "condition": { "type": "string" },
+        "importStatus": { "type": "string" },
+        "location": { "type": "string" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "listingId", "make", "model", "year", "askingPriceKes", "mileageKm", "transmission", "fuelType", "engineCc", "condition", "importStatus", "location", "createdAt", "updatedAt"]
+    },
+    "VehicleComparison": {
+      "title": "VehicleComparison",
+      "description": "Saved side-by-side comparison of up to 4 vehicles",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "vehicleIds": { "type": "array" },
+        "vehicleSummaries": { "type": "array" },
+        "winnerSummary": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "vehicleIds", "vehicleSummaries", "winnerSummary", "createdAt", "updatedAt"]
+    },
+    "ImportedVehicleListing": {
+      "title": "ImportedVehicleListing",
+      "description": "Cleaned and normalized vehicle listing imported from CSV or XLSX",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "sourceId": { "type": "string" },
+        "sourceName": { "type": "string" },
+        "make": { "type": "string" },
+        "model": { "type": "string" },
+        "year": { "type": "integer" },
+        "askingPriceKes": { "type": "integer" },
+        "mileageKm": { "type": "integer" },
+        "engineCc": { "type": "integer" },
+        "transmission": { "type": "string" },
+        "fuelType": { "type": "string" },
+        "condition": { "type": "string" },
+        "importStatus": { "type": "string" },
+        "location": { "type": "string" },
+        "demandScore": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "sourceId", "sourceName", "make", "model", "year", "askingPriceKes", "mileageKm", "engineCc", "transmission", "fuelType", "condition", "importStatus", "location", "demandScore", "createdAt", "updatedAt"]
+    },
+    "MarketAnalysis": {
+      "title": "MarketAnalysis",
+      "description": "Saved vehicle pricing and depreciation analysis report",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "make": { "type": "string" },
+        "model": { "type": "string" },
+        "year": { "type": "integer" },
+        "mileageKm": { "type": "integer" },
+        "estimatedPriceKes": { "type": "integer" },
+        "lowPriceKes": { "type": "integer" },
+        "highPriceKes": { "type": "integer" },
+        "annualDepreciationPct": { "type": "number" },
+        "fiveYearProjectedKes": { "type": "integer" },
+        "summary": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "make", "model", "year", "mileageKm", "estimatedPriceKes", "lowPriceKes", "highPriceKes", "annualDepreciationPct", "fiveYearProjectedKes", "summary", "createdAt", "updatedAt"]
+    },
+    "DataSourceRecord": {
+      "title": "DataSourceRecord",
+      "description": "Metadata and cleaning summary for an imported data source",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "sourceType": { "type": "string", "enum": ["csv", "xlsx", "seed", "feed"] },
+        "rowsImported": { "type": "integer" },
+        "duplicatesSkipped": { "type": "integer" },
+        "invalidRowsSkipped": { "type": "integer" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "sourceType", "rowsImported", "duplicatesSkipped", "invalidRowsSkipped", "isActive", "createdAt", "updatedAt"]
+    },
+    "PriceWatchlist": {
+      "title": "PriceWatchlist",
+      "description": "Buyer target price and vehicle spec alert rule",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "make": { "type": "string" },
+        "model": { "type": "string" },
+        "minYear": { "type": "integer" },
+        "maxYear": { "type": "integer" },
+        "maxBudgetKes": { "type": "integer" },
+        "preferredImportStatus": { "type": "string", "enum": ["All", "Foreign Used", "Locally Used"] },
+        "isActive": { "type": "boolean" },
+        "pushAlertsEnabled": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "make", "model", "minYear", "maxYear", "maxBudgetKes", "preferredImportStatus", "isActive", "createdAt", "updatedAt"]
+    },
+    "YardInspectionReport": {
+      "title": "YardInspectionReport",
+      "description": "Physical car yard inspection scorecard and estimated repair leverage",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "listingId": { "type": "string" },
+        "vehicleTitle": { "type": "string" },
+        "location": { "type": "string" },
+        "askingPriceKes": { "type": "integer" },
+        "overallScore": { "type": "integer" },
+        "verdictTier": { "type": "string", "enum": ["Buy Ready", "Negotiate Repairs", "Walk Away Risk"] },
+        "estimatedRepairKes": { "type": "integer" },
+        "recommendedOfferKes": { "type": "integer" },
+        "checklistSummary": { "type": "array" },
+        "notes": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "listingId", "vehicleTitle", "location", "askingPriceKes", "overallScore", "verdictTier", "estimatedRepairKes", "recommendedOfferKes", "checklistSummary", "createdAt", "updatedAt"]
+    },
+    "FeedSubscription": {
+      "title": "FeedSubscription",
+      "description": "Recurring remote dealership feed sync and watchlist notification preference",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "feedUrl": { "type": "string" },
+        "syncIntervalHours": { "type": "integer", "enum": [6, 12, 24] },
+        "autoSyncEnabled": { "type": "boolean" },
+        "alertsEnabled": { "type": "boolean" },
+        "lastSyncedAtEpochMs": { "type": "integer" },
+        "lastStatusMessage": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "name", "feedUrl", "syncIntervalHours", "autoSyncEnabled", "alertsEnabled", "lastSyncedAtEpochMs", "lastStatusMessage", "createdAt", "updatedAt"]
+    },
+    "MarketListing": {
+      "title": "MarketListing",
+      "description": "Shared real-time Kenyan vehicle listing published by verified signed-in dealers and buyers",
+      "type": "object",
+      "properties": {
+        "sellerUserId": { "type": "string" },
+        "sellerName": { "type": "string" },
+        "make": { "type": "string" },
+        "model": { "type": "string" },
+        "year": { "type": "integer" },
+        "askingPriceKes": { "type": "integer" },
+        "mileageKm": { "type": "integer" },
+        "engineCc": { "type": "integer" },
+        "transmission": { "type": "string" },
+        "fuelType": { "type": "string" },
+        "condition": { "type": "string" },
+        "importStatus": { "type": "string" },
+        "location": { "type": "string" },
+        "demandScore": { "type": "integer" },
+        "listingOrigin": { "type": "string", "enum": ["live_yard", "verified_dealer"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["sellerUserId", "sellerName", "make", "model", "year", "askingPriceKes", "mileageKm", "engineCc", "transmission", "fuelType", "condition", "importStatus", "location", "demandScore", "listingOrigin", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Private user profile and app preferences"
+    },
+    "/users/{userId}/savedVehicles/{savedId}": {
+      "schema": { "$ref": "#/entities/SavedVehicle" },
+      "description": "User-saved vehicle listings"
+    },
+    "/users/{userId}/comparisons/{comparisonId}": {
+      "schema": { "$ref": "#/entities/VehicleComparison" },
+      "description": "Saved multi-vehicle comparisons"
+    },
+    "/users/{userId}/importedListings/{listingId}": {
+      "schema": { "$ref": "#/entities/ImportedVehicleListing" },
+      "description": "Cleaned user-imported CSV/XLSX/Feed listings"
+    },
+    "/users/{userId}/marketAnalyses/{analysisId}": {
+      "schema": { "$ref": "#/entities/MarketAnalysis" },
+      "description": "Saved pricing and depreciation valuation reports"
+    },
+    "/users/{userId}/dataSources/{sourceId}": {
+      "schema": { "$ref": "#/entities/DataSourceRecord" },
+      "description": "Imported dataset source metadata and cleaning statistics"
+    },
+    "/users/{userId}/watchlists/{watchlistId}": {
+      "schema": { "$ref": "#/entities/PriceWatchlist" },
+      "description": "Target price watchlists for under-budget vehicle alerts"
+    },
+    "/users/{userId}/inspections/{inspectionId}": {
+      "schema": { "$ref": "#/entities/YardInspectionReport" },
+      "description": "Saved on-site yard inspection scorecards and repair deductions"
+    },
+    "/users/{userId}/feedSubscriptions/{subscriptionId}": {
+      "schema": { "$ref": "#/entities/FeedSubscription" },
+      "description": "Saved dealership feed URLs with auto-sync and watchlist alert schedules"
+    },
+    "/marketListings/{listingId}": {
+      "schema": { "$ref": "#/entities/MarketListing" },
+      "description": "Shared realtime Kenyan vehicle marketplace listings readable by signed-in users and writable by listing owners"
+    }
+  }
+}

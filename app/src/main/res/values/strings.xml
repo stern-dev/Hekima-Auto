@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Hekima Auto</string>
+    <string name="sync_status_live">LIVE</string>
+    <string name="sync_status_syncing">SYNCING</string>
+    <string name="sync_status_error">SYNC ERROR</string>
+    <string name="sync_status_offline">OFFLINE</string>
+    <string name="last_updated_label">Last Updated</string>
+    <string name="last_updated_awaiting">Awaiting live sync</string>
+    <string name="notification_prefs_title">Notification Preferences</string>
+    <string name="notification_prefs_subtitle">Control Android push alerts per watchlist and choose your price-drop cadence.</string>
+    <string name="notification_permission_granted">Android Push Permission Granted</string>
+    <string name="notification_permission_required">Allow Android Notifications</string>
+    <string name="notification_send_test">Send Test Alert</string>
+    <string name="notification_master_title">Price-Drop Push Alerts</string>
+    <string name="notification_frequency_title">Price-Drop Update Frequency</string>
+    <string name="notification_watchlists_title">Watchlist Push Subscriptions</string>
+</resources>

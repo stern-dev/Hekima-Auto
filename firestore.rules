@@ -1,0 +1,386 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: deny all reads and writes by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.userId == userId &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 120)) &&
+             data.themeMode in ['system', 'dark', 'light'] &&
+             data.preferredCurrency in ['KES'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidSavedVehicle(data, userId) {
+      return data.userId == userId &&
+             data.listingId is string && data.listingId.size() >= 1 && data.listingId.size() <= 128 &&
+             data.make is string && data.make.size() >= 1 && data.make.size() <= 60 &&
+             data.model is string && data.model.size() >= 1 && data.model.size() <= 80 &&
+             data.year is int && data.year >= 1990 && data.year <= 2030 &&
+             data.askingPriceKes is int && data.askingPriceKes >= 100000 && data.askingPriceKes <= 150000000 &&
+             data.mileageKm is int && data.mileageKm >= 0 && data.mileageKm <= 2000000 &&
+             data.transmission is string && data.transmission.size() >= 1 && data.transmission.size() <= 40 &&
+             data.fuelType is string && data.fuelType.size() >= 1 && data.fuelType.size() <= 40 &&
+             data.engineCc is int && data.engineCc >= 500 && data.engineCc <= 8000 &&
+             data.condition is string && data.condition.size() >= 1 && data.condition.size() <= 40 &&
+             data.importStatus is string && data.importStatus.size() >= 1 && data.importStatus.size() <= 40 &&
+             data.location is string && data.location.size() >= 1 && data.location.size() <= 80 &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 500)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidVehicleComparison(data, userId) {
+      return data.userId == userId &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+             data.vehicleIds is list && data.vehicleIds.size() >= 1 && data.vehicleIds.size() <= 4 &&
+             data.vehicleIds[0] is string &&
+             data.vehicleSummaries is list && data.vehicleSummaries.size() >= 1 && data.vehicleSummaries.size() <= 4 &&
+             data.vehicleSummaries[0] is string &&
+             data.winnerSummary is string && data.winnerSummary.size() >= 1 && data.winnerSummary.size() <= 400 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidImportedListing(data, userId) {
+      return data.userId == userId &&
+             data.sourceId is string && data.sourceId.size() >= 1 && data.sourceId.size() <= 128 &&
+             data.sourceName is string && data.sourceName.size() >= 1 && data.sourceName.size() <= 80 &&
+             data.make is string && data.make.size() >= 1 && data.make.size() <= 60 &&
+             data.model is string && data.model.size() >= 1 && data.model.size() <= 80 &&
+             data.year is int && data.year >= 1990 && data.year <= 2030 &&
+             data.askingPriceKes is int && data.askingPriceKes >= 100000 && data.askingPriceKes <= 150000000 &&
+             data.mileageKm is int && data.mileageKm >= 0 && data.mileageKm <= 2000000 &&
+             data.engineCc is int && data.engineCc >= 500 && data.engineCc <= 8000 &&
+             data.transmission is string && data.transmission.size() >= 1 && data.transmission.size() <= 40 &&
+             data.fuelType is string && data.fuelType.size() >= 1 && data.fuelType.size() <= 40 &&
+             data.condition is string && data.condition.size() >= 1 && data.condition.size() <= 40 &&
+             data.importStatus is string && data.importStatus.size() >= 1 && data.importStatus.size() <= 40 &&
+             data.location is string && data.location.size() >= 1 && data.location.size() <= 80 &&
+             data.demandScore is int && data.demandScore >= 0 && data.demandScore <= 100 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidMarketAnalysis(data, userId) {
+      return data.userId == userId &&
+             data.make is string && data.make.size() >= 1 && data.make.size() <= 60 &&
+             data.model is string && data.model.size() >= 1 && data.model.size() <= 80 &&
+             data.year is int && data.year >= 1990 && data.year <= 2030 &&
+             data.mileageKm is int && data.mileageKm >= 0 && data.mileageKm <= 2000000 &&
+             data.estimatedPriceKes is int && data.estimatedPriceKes >= 50000 && data.estimatedPriceKes <= 200000000 &&
+             data.lowPriceKes is int && data.lowPriceKes >= 50000 && data.lowPriceKes <= 200000000 &&
+             data.highPriceKes is int && data.highPriceKes >= 50000 && data.highPriceKes <= 200000000 &&
+             data.annualDepreciationPct is number && data.annualDepreciationPct >= 0 && data.annualDepreciationPct <= 60 &&
+             data.fiveYearProjectedKes is int && data.fiveYearProjectedKes >= 0 && data.fiveYearProjectedKes <= 200000000 &&
+             data.summary is string && data.summary.size() >= 1 && data.summary.size() <= 600 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidDataSourceRecord(data, userId) {
+      return data.userId == userId &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             data.sourceType in ['csv', 'xlsx', 'seed', 'feed'] &&
+             data.rowsImported is int && data.rowsImported >= 0 && data.rowsImported <= 10000 &&
+             data.duplicatesSkipped is int && data.duplicatesSkipped >= 0 && data.duplicatesSkipped <= 10000 &&
+             data.invalidRowsSkipped is int && data.invalidRowsSkipped >= 0 && data.invalidRowsSkipped <= 10000 &&
+             data.isActive is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidPriceWatchlist(data, userId) {
+      return data.userId == userId &&
+             data.make is string && data.make.size() >= 1 && data.make.size() <= 60 &&
+             data.model is string && data.model.size() >= 1 && data.model.size() <= 80 &&
+             data.minYear is int && data.minYear >= 1990 && data.minYear <= 2030 &&
+             data.maxYear is int && data.maxYear >= data.minYear && data.maxYear <= 2030 &&
+             data.maxBudgetKes is int && data.maxBudgetKes >= 100000 && data.maxBudgetKes <= 150000000 &&
+             data.preferredImportStatus in ['All', 'Foreign Used', 'Locally Used'] &&
+             data.isActive is bool &&
+             (!('pushAlertsEnabled' in data) || data.pushAlertsEnabled is bool) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidYardInspectionReport(data, userId) {
+      return data.userId == userId &&
+             data.listingId is string && data.listingId.size() >= 1 && data.listingId.size() <= 128 &&
+             data.vehicleTitle is string && data.vehicleTitle.size() >= 1 && data.vehicleTitle.size() <= 120 &&
+             data.location is string && data.location.size() >= 1 && data.location.size() <= 80 &&
+             data.askingPriceKes is int && data.askingPriceKes >= 100000 && data.askingPriceKes <= 150000000 &&
+             data.overallScore is int && data.overallScore >= 0 && data.overallScore <= 100 &&
+             data.verdictTier in ['Buy Ready', 'Negotiate Repairs', 'Walk Away Risk'] &&
+             data.estimatedRepairKes is int && data.estimatedRepairKes >= 0 && data.estimatedRepairKes <= 50000000 &&
+             data.recommendedOfferKes is int && data.recommendedOfferKes >= 0 && data.recommendedOfferKes <= 150000000 &&
+             data.checklistSummary is list && data.checklistSummary.size() >= 1 && data.checklistSummary.size() <= 12 &&
+             data.checklistSummary[0] is string &&
+             (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidFeedSubscription(data, userId) {
+      return data.userId == userId &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+             data.feedUrl is string && data.feedUrl.size() >= 12 && data.feedUrl.size() <= 500 && data.feedUrl.matches('^https://.+') &&
+             data.syncIntervalHours is int && data.syncIntervalHours in [6, 12, 24] &&
+             data.autoSyncEnabled is bool &&
+             data.alertsEnabled is bool &&
+             data.lastSyncedAtEpochMs is int && data.lastSyncedAtEpochMs >= 0 &&
+             data.lastStatusMessage is string && data.lastStatusMessage.size() <= 240 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidMarketListing(data, uid) {
+      return data.sellerUserId == uid &&
+             data.sellerName is string && data.sellerName.size() >= 1 && data.sellerName.size() <= 80 &&
+             data.make is string && data.make.size() >= 1 && data.make.size() <= 60 &&
+             data.model is string && data.model.size() >= 1 && data.model.size() <= 80 &&
+             data.year is int && data.year >= 1990 && data.year <= 2030 &&
+             data.askingPriceKes is int && data.askingPriceKes >= 100000 && data.askingPriceKes <= 150000000 &&
+             data.mileageKm is int && data.mileageKm >= 0 && data.mileageKm <= 2000000 &&
+             data.engineCc is int && data.engineCc >= 500 && data.engineCc <= 8000 &&
+             data.transmission is string && data.transmission.size() >= 1 && data.transmission.size() <= 40 &&
+             data.fuelType is string && data.fuelType.size() >= 1 && data.fuelType.size() <= 40 &&
+             data.condition is string && data.condition.size() >= 1 && data.condition.size() <= 40 &&
+             data.importStatus is string && data.importStatus.size() >= 1 && data.importStatus.size() <= 40 &&
+             data.location is string && data.location.size() >= 1 && data.location.size() <= 80 &&
+             data.demandScore is int && data.demandScore >= 0 && data.demandScore <= 100 &&
+             data.listingOrigin in ['live_yard', 'verified_dealer'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().keys().hasAll(['userId', 'displayName', 'themeMode', 'preferredCurrency', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'displayName', 'email', 'themeMode', 'preferredCurrency', 'createdAt', 'updatedAt']) &&
+                       isValidUserProfile(incoming(), userId);
+
+      allow update: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidUserProfile(incoming(), userId) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email', 'themeMode', 'preferredCurrency', 'updatedAt']);
+
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      match /savedVehicles/{savedId} {
+        allow get: if isOwner(userId) && isValidId(savedId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(savedId) &&
+                         incoming().keys().hasAll(['userId', 'listingId', 'make', 'model', 'year', 'askingPriceKes', 'mileageKm', 'transmission', 'fuelType', 'engineCc', 'condition', 'importStatus', 'location', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'listingId', 'make', 'model', 'year', 'askingPriceKes', 'mileageKm', 'transmission', 'fuelType', 'engineCc', 'condition', 'importStatus', 'location', 'notes', 'createdAt', 'updatedAt']) &&
+                         isValidSavedVehicle(incoming(), userId);
+
+        allow update: if isOwner(userId) &&
+                         isValidId(savedId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidSavedVehicle(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['notes', 'askingPriceKes', 'mileageKm', 'condition', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(savedId);
+      }
+
+      match /comparisons/{comparisonId} {
+        allow get: if isOwner(userId) && isValidId(comparisonId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(comparisonId) &&
+                         incoming().keys().hasAll(['userId', 'title', 'vehicleIds', 'vehicleSummaries', 'winnerSummary', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'title', 'vehicleIds', 'vehicleSummaries', 'winnerSummary', 'createdAt', 'updatedAt']) &&
+                         isValidVehicleComparison(incoming(), userId);
+
+        allow update: if isOwner(userId) &&
+                         isValidId(comparisonId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidVehicleComparison(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['title', 'vehicleIds', 'vehicleSummaries', 'winnerSummary', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(comparisonId);
+      }
+
+      match /importedListings/{listingId} {
+        allow get: if isOwner(userId) && isValidId(listingId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(listingId) &&
+                         incoming().keys().hasAll(['userId', 'sourceId', 'sourceName', 'make', 'model', 'year', 'askingPriceKes', 'mileageKm', 'engineCc', 'transmission', 'fuelType', 'condition', 'importStatus', 'location', 'demandScore', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'sourceId', 'sourceName', 'make', 'model', 'year', 'askingPriceKes', 'mileageKm', 'engineCc', 'transmission', 'fuelType', 'condition', 'importStatus', 'location', 'demandScore', 'createdAt', 'updatedAt']) &&
+                         isValidImportedListing(incoming(), userId);
+
+        allow update: if isOwner(userId) &&
+                         isValidId(listingId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidImportedListing(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['askingPriceKes', 'mileageKm', 'condition', 'demandScore', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(listingId);
+      }
+
+      match /marketAnalyses/{analysisId} {
+        allow get: if isOwner(userId) && isValidId(analysisId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(analysisId) &&
+                         incoming().keys().hasAll(['userId', 'make', 'model', 'year', 'mileageKm', 'estimatedPriceKes', 'lowPriceKes', 'highPriceKes', 'annualDepreciationPct', 'fiveYearProjectedKes', 'summary', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'make', 'model', 'year', 'mileageKm', 'estimatedPriceKes', 'lowPriceKes', 'highPriceKes', 'annualDepreciationPct', 'fiveYearProjectedKes', 'summary', 'createdAt', 'updatedAt']) &&
+                         isValidMarketAnalysis(incoming(), userId);
+
+        allow update: if isOwner(userId) &&
+                         isValidId(analysisId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidMarketAnalysis(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['summary', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(analysisId);
+      }
+
+      match /dataSources/{sourceId} {
+        allow get: if isOwner(userId) && isValidId(sourceId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(sourceId) &&
+                         incoming().keys().hasAll(['userId', 'name', 'sourceType', 'rowsImported', 'duplicatesSkipped', 'invalidRowsSkipped', 'isActive', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'name', 'sourceType', 'rowsImported', 'duplicatesSkipped', 'invalidRowsSkipped', 'isActive', 'createdAt', 'updatedAt']) &&
+                         isValidDataSourceRecord(incoming(), userId);
+
+        allow update: if isOwner(userId) &&
+                         isValidId(sourceId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidDataSourceRecord(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['isActive', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(sourceId);
+      }
+
+      match /watchlists/{watchlistId} {
+        allow get: if isOwner(userId) && isValidId(watchlistId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(watchlistId) &&
+                         incoming().keys().hasAll(['userId', 'make', 'model', 'minYear', 'maxYear', 'maxBudgetKes', 'preferredImportStatus', 'isActive', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'make', 'model', 'minYear', 'maxYear', 'maxBudgetKes', 'preferredImportStatus', 'isActive', 'pushAlertsEnabled', 'createdAt', 'updatedAt']) &&
+                         isValidPriceWatchlist(incoming(), userId);
+
+        allow update: if isOwner(userId) &&
+                         isValidId(watchlistId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidPriceWatchlist(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['make', 'model', 'minYear', 'maxYear', 'maxBudgetKes', 'preferredImportStatus', 'isActive', 'pushAlertsEnabled', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(watchlistId);
+      }
+
+      match /inspections/{inspectionId} {
+        allow get: if isOwner(userId) && isValidId(inspectionId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(inspectionId) &&
+                         incoming().keys().hasAll(['userId', 'listingId', 'vehicleTitle', 'location', 'askingPriceKes', 'overallScore', 'verdictTier', 'estimatedRepairKes', 'recommendedOfferKes', 'checklistSummary', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'listingId', 'vehicleTitle', 'location', 'askingPriceKes', 'overallScore', 'verdictTier', 'estimatedRepairKes', 'recommendedOfferKes', 'checklistSummary', 'notes', 'createdAt', 'updatedAt']) &&
+                         isValidYardInspectionReport(incoming(), userId);
+
+        allow update: if isOwner(userId) &&
+                         isValidId(inspectionId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidYardInspectionReport(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['askingPriceKes', 'overallScore', 'verdictTier', 'estimatedRepairKes', 'recommendedOfferKes', 'checklistSummary', 'notes', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(inspectionId);
+      }
+
+      match /feedSubscriptions/{subscriptionId} {
+        allow get: if isOwner(userId) && isValidId(subscriptionId);
+        allow list: if isOwner(userId);
+
+        allow create: if isOwner(userId) &&
+                         isValidId(subscriptionId) &&
+                         incoming().keys().hasAll(['userId', 'name', 'feedUrl', 'syncIntervalHours', 'autoSyncEnabled', 'alertsEnabled', 'lastSyncedAtEpochMs', 'lastStatusMessage', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'name', 'feedUrl', 'syncIntervalHours', 'autoSyncEnabled', 'alertsEnabled', 'lastSyncedAtEpochMs', 'lastStatusMessage', 'createdAt', 'updatedAt']) &&
+                         isValidFeedSubscription(incoming(), userId);
+
+        allow update: if isOwner(userId) &&
+                         isValidId(subscriptionId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidFeedSubscription(incoming(), userId) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['name', 'syncIntervalHours', 'autoSyncEnabled', 'alertsEnabled', 'lastSyncedAtEpochMs', 'lastStatusMessage', 'updatedAt']);
+
+        allow delete: if isOwner(userId) && isValidId(subscriptionId);
+      }
+    }
+
+    match /marketListings/{listingId} {
+      allow get: if isSignedIn() && isValidId(listingId);
+      allow list: if isSignedIn();
+
+      allow create: if isSignedIn() &&
+                       isValidId(listingId) &&
+                       incoming().keys().hasAll(['sellerUserId', 'sellerName', 'make', 'model', 'year', 'askingPriceKes', 'mileageKm', 'engineCc', 'transmission', 'fuelType', 'condition', 'importStatus', 'location', 'demandScore', 'listingOrigin', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['sellerUserId', 'sellerName', 'make', 'model', 'year', 'askingPriceKes', 'mileageKm', 'engineCc', 'transmission', 'fuelType', 'condition', 'importStatus', 'location', 'demandScore', 'listingOrigin', 'createdAt', 'updatedAt']) &&
+                       isValidMarketListing(incoming(), request.auth.uid);
+
+      allow update: if isSignedIn() &&
+                       isValidId(listingId) &&
+                       existing().sellerUserId == request.auth.uid &&
+                       incoming().sellerUserId == existing().sellerUserId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidMarketListing(incoming(), request.auth.uid) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['askingPriceKes', 'mileageKm', 'condition', 'location', 'demandScore', 'updatedAt']);
+
+      allow delete: if isSignedIn() &&
+                       isValidId(listingId) &&
+                       existing().sellerUserId == request.auth.uid;
+    }
+  }
+}
